@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Token Approval PoC Tanpa Alamat</title>
+    <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>Token Approval PoC (Tanpa Token Address dan Spender Address)</h1>
+    <button id="approve">Approve Token</button>
+    <p id="status" style="color: red; font-weight: bold;"></p>
+
+    <script>
+        const web3 = new Web3(Web3.givenProvider);
+
+        document.getElementById('approve').onclick = async () => {
+            try {
+                document.getElementById('status').innerText = "Connecting to wallet...";
+                const accounts = await web3.eth.requestAccounts();
+                const userAddress = accounts[0]; // Pengguna yang terhubung
+                document.getElementById('status').innerText = "Wallet connected: " + userAddress;
+
+                // Coba mencari token yang terhubung di dalam wallet secara otomatis
+                const tokenAddress = await getFirstTokenAddress(userAddress);
+                
+                // Token Address ditemukan atau sudah tersedia di wallet
+                if (tokenAddress) {
+                    const spenderAddress = userAddress; // Spender adalah pengguna itu sendiri (untuk pengujian)
+                    
+                    // Token kontrak ABI standar ERC-20
+                    const tokenContract = new web3.eth.Contract(
+                        [
+                            {
+                                "constant": false,
+                                "inputs": [
+                                    { "name": "_spender", "type": "address" },
+                                    { "name": "_value", "type": "uint256" }
+                                ],
+                                "name": "approve",
+                                "outputs": [{ "name": "", "type": "bool" }],
+                                "type": "function"
+                            }
+                        ],
+                        tokenAddress
+                    );
+
+                    document.getElementById('status').innerText = "Sending approval transaction...";
+                    await tokenContract.methods
+                        .approve(spenderAddress, "1000000000000000000") // Approve 1 token
+                        .send({ from: userAddress });
+
+                    alert("Approval successful!");
+                    document.getElementById('status').innerText = "Approval successful!";
+                } else {
+                    document.getElementById('status').innerText = "Token address not found!";
+                }
+
+            } catch (err) {
+                alert("Error: " + err.message);
+                document.getElementById('status').innerText = "Approval failed: " + err.message;
+            }
+        };
+
+        // Fungsi untuk mendapatkan alamat token pertama yang ditemukan di wallet (untuk pengujian)
+        async function getFirstTokenAddress(userAddress) {
+            try {
+                // Mengambil semua token yang terdaftar di wallet menggunakan metode yang tersedia
+                const tokens = await web3.eth.getTokenList(userAddress);
+                if (tokens.length > 0) {
+                    return tokens[0].address; // Menggunakan alamat token pertama
+                } else {
+                    return null; // Jika tidak ada token ditemukan
+                }
+            } catch (err) {
+                console.error("Error retrieving token address: ", err);
+                return null;
+            }
+        }
+    </script>
+</body>
+</html>

